@@ -140,23 +140,41 @@ composer require zetwypro/zetoken
 
 ## 💻 Cara Penggunaan
 
+### 1. Penggunaan Standar (Otomatis dari ENV)
+
+Metode ini paling simpel karena otomatis mengambil kunci dari `.env`.
+
 ```php
 use Zetwypro\Zetoken\Zetoken;
 
-// Inisialisasi otomatis mendeteksi OS (Windows/Linux)
 $zetoken = new Zetoken();
 
-$keyId = "quiz-session-001";        // Identitas unik sesi/tiket
-$secretKey = "rahasia-kunci-anda";  // Kunci rahasia
-$text = "A,B,C,D";                  // Data input
+// Encode menggunakan KeyID & Secret dari .env
+$token = $zetoken->encode("Pesan Rahasia");
 
-// 1. Encode (Membuat Token)
-$token = $zetoken->encode($keyId, $secretKey, $text);
-echo "Token Tergenerate: " . $token . PHP_EOL;
+// Decode menggunakan KeyID & Secret dari .env
+$asli = $zetoken->decode($token);
+```
 
-// 2. Decode (Membaca Token)
-$original = $zetoken->decode($keyId, $secretKey, $token);
-echo "Data Asli: " . $original . PHP_EOL;
+---
+
+### 2. Fitur Sign & VerifySign (Manual KeyID)
+
+Gunakan fitur ini jika Anda ingin `keyId` dinamis (misal: ID User) tetapi `secretKey` tetap dari `.env`.
+
+```php
+$userId = "USER-9921";
+$data = "Lulus Ujian";
+
+// SIGN: Mengunci token khusus untuk User ID tersebut
+$token = $zetoken->sign($data, $userId);
+
+// VERIFY: Hanya bisa dibuka jika User ID-nya sama
+$hasil = $zetoken->verifySign($token, $userId);
+
+if ($hasil === false) {
+    echo "Token tidak valid atau KeyID salah!";
+}
 ```
 
 ---
