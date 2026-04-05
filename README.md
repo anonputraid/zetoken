@@ -83,7 +83,7 @@ Jika kunci tidak ditemukan di ENV atau parameter fungsi, maka:
 
 Gunakan alat bantu berikut untuk membuat atau membaca token konfigurasi:
 
-👉 [**BUKA ZETOKEN GENERATOR**](generator/index.html)
+👉 [**BUKA ZETOKEN GENERATOR**](https://anonputraid.github.io/zetoken.html)
 
 ---
 
