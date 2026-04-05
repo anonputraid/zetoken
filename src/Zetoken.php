@@ -24,10 +24,10 @@ class Zetoken
 
         if ($libPath === null) {
             $ext = (PHP_OS_FAMILY === 'Windows') ? 'dll' : 'so';
-            $libPath = __DIR__ . DIRECTORY_SEPARATOR . "gabung.{$ext}";
+            $libPath = __DIR__ . DIRECTORY_SEPARATOR . "zetoken.{$ext}";
 
             if (!file_exists($libPath)) {
-                $libPath = getcwd() . DIRECTORY_SEPARATOR . "gabung.{$ext}";
+                $libPath = getcwd() . DIRECTORY_SEPARATOR . "zetoken.{$ext}";
             }
         }
 
