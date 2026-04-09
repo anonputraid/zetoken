@@ -1,6 +1,6 @@
-# ZetokenLibrary
+# Zetoken
 
-ZetokenLibrary adalah library PHP untuk membuat token sederhana yang diproses secara cepat melalui native C++.
+Zetoken adalah library PHP untuk membuat token sederhana yang diproses secara cepat melalui native C++.
 
 ---
 
