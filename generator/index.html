@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zetoken Key Generator (Secure)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;800&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .mono {
+        font-family: "Fira Code", monospace;
+      }
+      .glass {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+      }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-2xl w-full">
+      <div class="glass border border-slate-800 rounded-3xl shadow-2xl p-8 md:p-12 relative overflow-hidden">
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 blur-[100px] rounded-full"></div>
+        <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/10 blur-[100px] rounded-full"></div>
+
+        <header class="text-center mb-10 relative z-10">
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3">
+            Zetoken <span class="text-blue-500">Key Generator</span>
+          </h1>
+          <p class="text-slate-400 text-sm max-w-md mx-auto">
+            Gunakan alat ini untuk membuat identitas, kunci rahasia, dan tingkat iterasi unik untuk konfigurasi <code class="text-blue-400">.env</code> Anda secara kriptografis aman.
+          </p>
+        </header>
+
+        <div class="space-y-8 relative z-10">
+          <div class="space-y-6">
+            
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">ZETOKEN_ACCESS_KEY_ID</label>
+                <button onclick="copyToClipboard('accessKey')" class="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase">
+                  Salin
+                </button>
+              </div>
+              <div id="accessKey" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm mono text-blue-300 break-all min-h-[56px] flex items-center justify-center text-center">
+                Klik tombol generate...
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">ZETOKEN_SECRET_KEY</label>
+                <button onclick="copyToClipboard('secretKey')" class="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase">
+                  Salin
+                </button>
+              </div>
+              <div id="secretKey" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm mono text-emerald-400 break-all min-h-[56px] flex items-center justify-center text-center">
+                Klik tombol generate...
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-end mb-2">
+                <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">ZETOKEN_ITERATIONS</label>
+                <button onclick="copyToClipboard('iterations')" class="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase">
+                  Salin
+                </button>
+              </div>
+              <div id="iterations" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm mono text-purple-400 break-all min-h-[56px] flex items-center justify-center text-center">
+                Klik tombol generate...
+              </div>
+            </div>
+
+          </div>
+
+          <button onclick="generateKeys()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            GENERATE SECURE KEYS
+          </button>
+
+          <div class="mt-10 p-6 bg-slate-950/50 border border-slate-800/50 rounded-2xl">
+            <h3 class="text-xs font-bold text-slate-500 uppercase mb-4 text-center tracking-widest">
+              Pratinjau .env
+            </h3>
+            <pre id="envPreview" class="text-xs mono text-slate-400 space-y-2 cursor-pointer" onclick="copyToClipboard('envPreview')">
+# Salin ini ke file .env Anda
+ZETOKEN_ACCESS_KEY_ID=""
+ZETOKEN_SECRET_KEY=""
+ZETOKEN_ITERATIONS=""</pre>
+          </div>
+        </div>
+      </div>
+
+      <footer class="mt-8 text-center">
+        <p class="text-slate-600 text-[10px] uppercase tracking-[0.3em]">
+          Zetoken Security Tool &bull; Web Crypto API Enabled
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      /**
+       * Menggunakan Web Crypto API sebagai pengganti Math.random().
+       * Kita menggunakan Rejection Sampling untuk menghindari "Modulo Bias" 
+       * sehingga distribusi angka 0-9 merata secara kriptografis sempurna.
+       */
+      function generateSecureDigits(length) {
+        let result = "";
+        while (result.length < length) {
+          const array = new Uint8Array(1);
+          window.crypto.getRandomValues(array);
+          // Hanya ambil angka di bawah 250 untuk menghindari modulo bias dari 256
+          if (array[0] < 250) {
+            result += (array[0] % 10).toString();
+          }
+        }
+        return result;
+      }
+
+      /**
+       * Web Crypto API untuk karakter Base64.
+       */
+      function generateSecureBase64(length) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let result = "";
+        const array = new Uint8Array(length);
+        window.crypto.getRandomValues(array);
+        
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(array[i] % 64);
+        }
+        return result + "=";
+      }
+
+      /**
+       * Menghasilkan jumlah iterasi acak antara 1000 hingga 5000.
+       * Angka ini memastikan keamanan (stretching) tetap berjalan
+       * tanpa memberatkan CPU server saat proses enkripsi/dekripsi.
+       */
+      function generateSecureIterations() {
+        const array = new Uint16Array(1);
+        window.crypto.getRandomValues(array);
+        // Uint16 menghasilkan angka 0 - 65535.
+        // Kita modulo 4001 agar mendapat angka 0 - 4000, lalu ditambah 1000.
+        // Hasil akhir selalu di antara rentang 1000 s/d 5000.
+        return (array[0] % 4001) + 1000;
+      }
+
+      function generateKeys() {
+        // Format ID: Angka panjang (49 digit)
+        const accessKey = generateSecureDigits(49);
+
+        // Format Secret: ZET/8_angka_acak/Base64_43_char
+        const random8 = generateSecureDigits(8);
+        const randomBase64 = generateSecureBase64(43);
+        const secretKey = `ZET/${random8}/${randomBase64}`;
+
+        // Format Iterations: Angka acak 1000 - 5000
+        const iterations = generateSecureIterations().toString();
+
+        document.getElementById("accessKey").innerText = accessKey;
+        document.getElementById("secretKey").innerText = secretKey;
+        document.getElementById("iterations").innerText = iterations;
+
+        const envContent = `# Salin ini ke file .env Anda\nZETOKEN_ACCESS_KEY_ID="${accessKey}"\nZETOKEN_SECRET_KEY="${secretKey}"\nZETOKEN_ITERATIONS="${iterations}"`;
+        document.getElementById("envPreview").innerText = envContent;
+      }
+
+      async function copyToClipboard(id) {
+        const text = document.getElementById(id).innerText;
+        if (text.includes("Klik tombol")) return;
+
+        // Menggunakan Modern Clipboard API dengan Fallback
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const el = document.createElement("textarea");
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand("copy");
+            document.body.removeChild(el);
+          }
+          alert("Berhasil disalin ke clipboard!");
+        } catch (err) {
+          console.error("Gagal menyalin text: ", err);
+        }
+      }
+
+      // Jalankan sekali saat load
+      window.onload = generateKeys;
+    </script>
+  </body>
+</html>

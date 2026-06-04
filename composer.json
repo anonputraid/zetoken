@@ -1,0 +1,17 @@
+{
+  "name": "zetwypro/zetoken",
+  "description": "Simple token creation",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Zetwypro\\Zetoken\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.4"
+  },
+  "suggest": {
+    "ext-ffi": "Dibutuhkan untuk menjalankan core C++"
+  }
+}

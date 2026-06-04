@@ -1,0 +1,9 @@
+/vendor/
+.env
+.phpunit.result.cache
+/native/
+*.o
+*.obj
+.DS_Store
+Thumbs.db
+testing
