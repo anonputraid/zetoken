@@ -32,12 +32,17 @@ class Zetoken
         return hash_pbkdf2('sha512', $seed, $startPoint, $iterations, 16, true);
     }
 
-    public function encode(string $text, ?string $keyId = null, ?string $secretKey = null): string|false
+    public function encode(string $text, ?string $keyId = null, ?string $secretKey = null, ?int $ttl = null): string|false
     {
         [$kid, $sec, $iterations] = $this->resolveKeys($keyId, $secretKey);
 
         if (!$kid || !$sec) {
             return false;
+        }
+
+        if ($ttl !== null && $ttl > 0) {
+            $expTime = time() + $ttl;
+            $text = $text . '__ZTX__' . $expTime;
         }
 
         $aesKey = $this->deriveCryptographicKey($kid, $sec, $iterations);
@@ -62,7 +67,7 @@ class Zetoken
         return $numericResult;
     }
 
-    public function decode(string $cipherText, ?string $keyId = null, ?string $secretKey = null): string|false
+    public function decode(string $cipherText, ?string $keyId = null, ?string $secretKey = null, int $leeway = 60): string|false
     {
         [$kid, $sec, $iterations] = $this->resolveKeys($keyId, $secretKey);
 
@@ -91,10 +96,32 @@ class Zetoken
 
         $aesKey = $this->deriveCryptographicKey($kid, $sec, $iterations);
 
-        return openssl_decrypt($actualCipherText, 'aes-128-gcm', $aesKey, OPENSSL_RAW_DATA, $iv, $tag);
+        $decryptedText = openssl_decrypt($actualCipherText, 'aes-128-gcm', $aesKey, OPENSSL_RAW_DATA, $iv, $tag);
+
+        if ($decryptedText === false) {
+            return false;
+        }
+
+        $pos = strrpos($decryptedText, '__ZTX__');
+        
+        if ($pos !== false) {
+            $expString = substr($decryptedText, $pos + 7); 
+            
+            if ($expString !== '' && ctype_digit($expString)) {
+                $expTime = (int)$expString;
+                
+                if ((time() - $leeway) > $expTime) {
+                    return false; // Token hangus / Expired
+                }
+                
+                return substr($decryptedText, 0, $pos);
+            }
+        }
+
+        return $decryptedText;
     }
 
-    public function sign(string $text, string $keyId, ?string $secretKey = null): string|false
+    public function sign(string $text, string $keyId, ?string $secretKey = null, ?int $ttl = null): string|false
     {
         [$masterAccessKey, $masterSecretKey] = $this->resolveKeys(null, $secretKey);
 
@@ -104,10 +131,10 @@ class Zetoken
 
         $layeredKeyId = $masterAccessKey . '::' . $keyId;
 
-        return $this->encode($text, $layeredKeyId, $masterSecretKey);
+        return $this->encode($text, $layeredKeyId, $masterSecretKey, $ttl);
     }
 
-    public function verifySign(string $token, string $keyId, ?string $secretKey = null): string|false
+    public function verifySign(string $token, string $keyId, ?string $secretKey = null, int $leeway = 60): string|false
     {
         [$masterAccessKey, $masterSecretKey] = $this->resolveKeys(null, $secretKey);
 
@@ -117,6 +144,6 @@ class Zetoken
 
         $layeredKeyId = $masterAccessKey . '::' . $keyId;
 
-        return $this->decode($token, $layeredKeyId, $masterSecretKey);
+        return $this->decode($token, $layeredKeyId, $masterSecretKey, $leeway);
     }
 }
